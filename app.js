@@ -5,14 +5,15 @@ const https = require('https');
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.set('view engine', 'ejs');
 
 app.get('/', (req, res) =>{
-    res.sendFile(__dirname + '/index.html');
+    res.render('index');
 });
 
 app.post('/', (req, res) =>{
     const query = req.body.jokeType;
-    console.log(query);
+    console.log(req.body);
     const url = 'https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw&type=' + query;
     
     https.get(url, (response) =>{
@@ -20,14 +21,9 @@ app.post('/', (req, res) =>{
             const jokeData = JSON.parse(data);
             console.log(jokeData);
             if(jokeData.type === 'twopart'){
-                res.setHeader('Content-type', 'text/html');
-                res.write(`<h1>${jokeData.setup}</h1>`)
-                res.write(`<h2>${jokeData.delivery}</h2>`)
-                res.send();
+                res.render('twopart', {setup: jokeData.setup, delivery: jokeData.delivery});
             } else{
-                res.setHeader('Content-type', 'text/html');
-                res.write(`<h1>${jokeData.joke}</h1>`);
-                res.send();
+                res.render('single', {joke: jokeData.joke});
             }
         });
     });
